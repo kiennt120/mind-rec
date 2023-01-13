@@ -4,6 +4,7 @@ import numpy as np
 from tqdm import tqdm
 import tensorflow as tf
 from tensorflow.compat.v1 import keras
+import pandas as pd
 
 from models.deeprec_utils import cal_metric
 
@@ -72,6 +73,12 @@ class BaseModel:
         self.train_optimizer = self._get_opt()
 
         self.model.compile(loss=self.loss, optimizer=self.train_optimizer)
+
+    def _init_entity_embedding(self, file_path):
+        entity_embedding = pd.read_table(file_path, index_col=0, header=None, names=range(0, 101))
+        entity_embedding.drop(entity_embedding.columns[len(entity_embedding.columns)-1], axis=1, inplace=True)
+
+        return entity_embedding.to_numpy()
 
     def _init_embedding(self, file_path):
         """Load pre-trained embeddings as a constant tensor.
