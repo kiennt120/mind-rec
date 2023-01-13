@@ -190,10 +190,12 @@ class BaseModel:
         If test_news_file is not None, evaluate it too.
 
         Args:
-            train_*_file (str): training data set.
-            valid_*_file (str): validation set.
+            train_news_file (str): training data set.
+            train_behaviors_file
+            valid_news_file (str): validation set.
+            valid_behaviors_file
             test_news_file (str): test set.
-
+            test_behaviors_file
         Returns:
             object: An instance of self.
         """

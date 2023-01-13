@@ -84,7 +84,7 @@ class MINDAllIterator(BaseIterator):
 
         with tf.io.gfile.GFile(news_file, "r") as rd:
             for line in rd:
-                nid, vert, subvert, title, ab, url, _, _ = line.strip("\n").split(
+                nid, vert, subvert, title, ab, url, entities_title, entities_ab = line.strip("\n").split(
                     self.col_spliter
                 )
 

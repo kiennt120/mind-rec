@@ -4,8 +4,9 @@ import pandas as pd
 import numpy as np
 import csv
 import os
-from download_utils import unzip_file, maybe_download
-from nltk.tokenize import RegexpTokenizer
+from dataset.download_utils import unzip_file, maybe_download
+# from nltk.tokenize import RegexpTokenizer
+from models.newsrec_utils import word_tokenize
 from models.deeprec_utils import load_yaml, flat_config, create_hparams
 import argparse
 
@@ -85,7 +86,7 @@ def download_and_extract_glove(dest_path):
     return glove_path
 
 
-def _read_news(filepath, news_vert, news_subvert, news_words, news_entities, tokenizer):
+def _read_news(filepath, news_vert, news_subvert, news_words, news_entities):
     vert, subvert, word, entity = 0, 0, 0, 0
     with open(filepath, encoding="utf-8") as f:
         lines = f.readlines()
@@ -97,7 +98,7 @@ def _read_news(filepath, news_vert, news_subvert, news_words, news_entities, tok
         if splitted[2] not in news_subvert:
             subvert += 1
             news_subvert[splitted[2]] = subvert
-        for i in tokenizer.tokenize(splitted[3].lower()):
+        for i in word_tokenize(splitted[3]):
             if i not in news_words:
                 word += 1
                 news_words[i] = word
@@ -122,9 +123,8 @@ def get_words_and_entities(train_news, utils):
     news_subvert = {}
     news_words = {}
     news_entities = {}
-    tokenizer = RegexpTokenizer(r"\w+")
     news_vert, news_subvert, news_words, news_entities = _read_news(
-        train_news, news_vert, news_subvert, news_words, news_entities, tokenizer
+        train_news, news_vert, news_subvert, news_words, news_entities
     )
     # news_vert, news_subvert, news_words, news_entities = _read_news(
     #     valid_news, news_vert, news_subvert, news_words, news_entities, tokenizer
@@ -149,8 +149,8 @@ def get_words_and_entities(train_news, utils):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('yaml_path', type=str)
-    parser.add_argument('data_path', type=str)
+    parser.add_argument('--yaml_path', type=str)
+    parser.add_argument('--data_path', type=str)
     args = parser.parse_args()
 
     config = load_yaml(args.yaml_path)
