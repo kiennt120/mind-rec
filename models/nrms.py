@@ -33,7 +33,7 @@ class NRMSModel(BaseModel):
             iterator_creator_test (object): NRMS data loader class for test and validation data
         """
         self.word2vec_embedding = self._init_embedding(hparams.wordEmb_file)
-        self.entity2vec_embedding = self._init_entity_embedding(hparams.enityEmb_file)
+        self.entity2vec_embedding = self._init_entity_embedding(hparams.entityEmb_file)
         super().__init__(hparams, iterator_creator, seed=seed)
 
     def _get_input_label_from_iter(self, batch_data):
@@ -122,7 +122,7 @@ class NRMSModel(BaseModel):
         """
         hparams = self.hparams
         his_input_news = keras.Input(
-            shape=(hparams.his_size, hparams.title_size+hparams.body_size+2), dtype="int32"
+            shape=(hparams.his_size, hparams.title_size+hparams.body_size+2*hparams.entity_size+2), dtype="int32"
         )
 
         click_news_presents = layers.TimeDistributed(newsencoder)(his_input_news)
@@ -156,10 +156,10 @@ class NRMSModel(BaseModel):
         input_subvert = layers.Lambda(lambda x: x[:, hparams.title_size+hparams.entity_size+hparams.body_size+hparams.entity_size+1:])(input_title_body_verts)
 
         title_repr = self._build_titleencoder(embedding_layer)(sequences_input_title)
-        entity_title_repr = self._build_entity(entity_embedding_layer)(sequences_entity_input_title)
+        entity_title_repr = self._build_entity_title(entity_embedding_layer)(sequences_entity_input_title)
         title_repr = layers.Add()([title_repr, entity_title_repr])
         body_repr = self._build_bodyencoder(embedding_layer)(sequences_input_body)
-        entity_ab_repr = self._build_entity(entity_embedding_layer)(sequences_entity_input_ab)
+        entity_ab_repr = self._build_entity_ab(entity_embedding_layer)(sequences_entity_input_ab)
         body_repr = layers.Add()([body_repr, entity_ab_repr])
         vert_repr = self._build_vertencoder()(input_vert)
         subvert_repr = self._build_subvertencoder()(input_subvert)
@@ -183,9 +183,9 @@ class NRMSModel(BaseModel):
         model = keras.Model(sequences_input_title, pred_title, name='title_encoder')
         return model
 
-    def _build_entity(self, entity_embedding_layer):
+    def _build_entity_title(self, entity_embedding_layer):
         hparams = self.hparams
-        sequences_input_entity = keras.Input(shape=(hparams.title_size,), dtype='int32')
+        sequences_input_entity = keras.Input(shape=(hparams.entity_size,), dtype='int32')
         embedded_sequences_entity = entity_embedding_layer(sequences_input_entity)
         y = layers.Dropout(hparams.dropout)(embedded_sequences_entity)
         y = SelfAttention(hparams.head_num, hparams.head_dim, seed=self.seed)([y, y, y])
@@ -193,7 +193,20 @@ class NRMSModel(BaseModel):
 
         pred_entity = AttLayer2(hparams.attention_hidden_dim, seed=self.seed)(y)
         pred_entity = layers.Reshape((1, hparams.filter_num))(pred_entity)
-        model = keras.Model(sequences_input_entity, pred_entity, name='entity_encoder')
+        model = keras.Model(sequences_input_entity, pred_entity, name='entity_title_encoder')
+        return model
+
+    def _build_entity_ab(self, entity_embedding_layer):
+        hparams = self.hparams
+        sequences_input_entity = keras.Input(shape=(hparams.entity_size,), dtype='int32')
+        embedded_sequences_entity = entity_embedding_layer(sequences_input_entity)
+        y = layers.Dropout(hparams.dropout)(embedded_sequences_entity)
+        y = SelfAttention(hparams.head_num, hparams.head_dim, seed=self.seed)([y, y, y])
+        y = layers.Dropout(hparams.dropout)(y)
+
+        pred_entity = AttLayer2(hparams.attention_hidden_dim, seed=self.seed)(y)
+        pred_entity = layers.Reshape((1, hparams.filter_num))(pred_entity)
+        model = keras.Model(sequences_input_entity, pred_entity, name='entity_ab_encoder')
         return model
 
     def _build_bodyencoder(self, embedding_layer):

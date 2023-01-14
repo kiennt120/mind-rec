@@ -50,6 +50,7 @@ class MINDAllIterator(BaseIterator):
         self.ID_spliter = ID_spliter
         self.batch_size = hparams.batch_size
         self.title_size = hparams.title_size
+        self.entity_size = hparams.entity_size
         self.body_size = hparams.body_size
         self.his_size = hparams.his_size
         self.npratio = npratio
@@ -103,21 +104,27 @@ class MINDAllIterator(BaseIterator):
                 news_subvert.append(subvert)
 
                 entity_title_list = []
-                for entity in json.loads(entity_title):
-                    entity_title_list.append(entity['WikidataId'])
+                if not json.loads(entity_title):
+                    news_entity_title.append([''])
+                else:
+                    for entity in json.loads(entity_title):
+                        entity_title_list.append(entity['WikidataId'])
                 news_entity_title.append(entity_title_list.reverse())
 
                 entity_ab_list = []
-                for entity in json.loads(entity_ab):
-                    entity_ab_list.append(entity['WikidataId'])
+                if not json.loads(entity_ab):
+                    news_entity_ab.append([''])
+                else:
+                    for entity in json.loads(entity_ab):
+                        entity_ab_list.append(entity['WikidataId'])
                 news_entity_ab.append(entity_ab_list.reverse())
 
         self.news_title_index = np.zeros((len(news_title), self.title_size), dtype="int32")
         self.news_ab_index = np.zeros((len(news_ab), self.body_size), dtype="int32")
         self.news_vert_index = np.zeros((len(news_vert), 1), dtype="int32")
         self.news_subvert_index = np.zeros((len(news_subvert), 1), dtype="int32")
-        self.news_entity_title_index = np.zeros((len(news_entity_title), self.title_size), dtype='int32')
-        self.news_entity_ab_index = np.zeros((len(news_entity_ab), self.body_size), dtype='int32')
+        self.news_entity_title_index = np.zeros((len(news_entity_title), self.entity_size), dtype='int32')
+        self.news_entity_ab_index = np.zeros((len(news_entity_ab), self.entity_size), dtype='int32')
 
         for news_index in range(len(news_title)):
             title = news_title[news_index]
@@ -137,10 +144,10 @@ class MINDAllIterator(BaseIterator):
                 self.news_vert_index[news_index, 0] = self.vert_dict[vert]
             if subvert in self.subvert_dict:
                 self.news_subvert_index[news_index, 0] = self.subvert_dict[subvert]
-            for entity in range(min(self.title_size, len(entity_title))):
+            for entity in range(min(self.entity_size, len(entity_title))):
                 if entity_title[entity] in self.entity_dict:
                     self.news_entity_title_index[news_index, entity] = self.entity_dict[entity_title[entity]]
-            for entity in range(min(self.body_size, len(entity_ab))):
+            for entity in range(min(self.entity_size, len(entity_ab))):
                 if entity_ab[entity] in self.entity_dict:
                     self.news_entity_ab_index[news_index, entity] = self.entity_dict[entity_ab[entity]]
 

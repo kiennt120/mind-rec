@@ -83,6 +83,7 @@ def download_and_extract_glove(dest_path):
     filepath = maybe_download(url=url, work_directory=dest_path)
     glove_path = os.path.join(dest_path, "glove")
     unzip_file(filepath, glove_path, clean_zip_file=False)
+    os.remove(filepath)
     return glove_path
 
 
