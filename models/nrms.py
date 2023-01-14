@@ -48,11 +48,15 @@ class NRMSModel(BaseModel):
         """
         input_feat = [
             batch_data["clicked_title_batch"],
+            batch_data["clicked_entity_title_batch"],
             batch_data["clicked_ab_batch"],
+            batch_data["clicked_entity_ab_batch"],
             batch_data["clicked_vert_batch"],
             batch_data["clicked_subvert_batch"],
             batch_data["candidate_title_batch"],
+            batch_data["candidate_entity_title_batch"],
             batch_data["candidate_ab_batch"],
+            batch_data["candidate_entity_ab_batch"],
             batch_data["candidate_vert_batch"],
             batch_data["candidate_subvert_batch"],
         ]
@@ -69,7 +73,9 @@ class NRMSModel(BaseModel):
         """
         input_feature = [
             batch_data["clicked_title_batch"],
+            batch_data["clicked_entity_title_batch"],
             batch_data["clicked_ab_batch"],
+            batch_data["clicked_entity_ab_batch"],
             batch_data["clicked_vert_batch"],
             batch_data["clicked_subvert_batch"],
         ]
@@ -86,7 +92,9 @@ class NRMSModel(BaseModel):
         """
         input_feature = [
             batch_data["candidate_title_batch"],
+            batch_data["candidate_entity_title_batch"],
             batch_data["candidate_ab_batch"],
+            batch_data["candidate_entity_ab_batch"],
             batch_data["candidate_vert_batch"],
             batch_data["candidate_subvert_batch"],
         ]
@@ -126,7 +134,7 @@ class NRMSModel(BaseModel):
         model = keras.Model(his_input_news, user_present, name="user_encoder")
         return model
 
-    def _build_newsencoder(self, embedding_layer):
+    def _build_newsencoder(self, embedding_layer, entity_embedding_layer):
         """The main function to create news encoder of NRMS.
 
         Args:
@@ -137,16 +145,22 @@ class NRMSModel(BaseModel):
         """
         hparams = self.hparams
         input_title_body_verts = keras.Input(
-            shape=(hparams.title_size + hparams.body_size + 2,), dtype="int32"
+            shape=(hparams.title_size + hparams.body_size + 2 + 2*hparams.entity_size,), dtype="int32"
         )
 
         sequences_input_title = layers.Lambda(lambda x: x[:, : hparams.title_size])(input_title_body_verts)
-        sequences_input_body = layers.Lambda(lambda x: x[:, hparams.title_size: hparams.title_size + hparams.body_size])(input_title_body_verts)
-        input_vert = layers.Lambda(lambda x: x[:, hparams.title_size + hparams.body_size: hparams.title_size + hparams.body_size + 1])(input_title_body_verts)
-        input_subvert = layers.Lambda(lambda x: x[:, hparams.title_size + hparams.body_size + 1:])(input_title_body_verts)
+        sequences_entity_input_title = layers.Lambda(lambda x: x[:, hparams.title_size:hparams.title_size+hparams.entity_size])(input_title_body_verts)
+        sequences_input_body = layers.Lambda(lambda x: x[:, hparams.title_size+hparams.entity_size: hparams.title_size+hparams.entity_size+hparams.body_size])(input_title_body_verts)
+        sequences_entity_input_ab = layers.Lambda(lambda x: x[:, hparams.title_size+hparams.entity_size+hparams.body_size:hparams.title_size+hparams.entity_size+hparams.body_size+hparams.entity_size])(input_title_body_verts)
+        input_vert = layers.Lambda(lambda x: x[:, hparams.title_size+hparams.entity_size+hparams.body_size+hparams.entity_size: hparams.title_size+hparams.entity_size+hparams.body_size+hparams.entity_size+1])(input_title_body_verts)
+        input_subvert = layers.Lambda(lambda x: x[:, hparams.title_size+hparams.entity_size+hparams.body_size+hparams.entity_size+1:])(input_title_body_verts)
 
         title_repr = self._build_titleencoder(embedding_layer)(sequences_input_title)
+        entity_title_repr = self._build_entity(entity_embedding_layer)(sequences_entity_input_title)
+        title_repr = layers.Add()([title_repr, entity_title_repr])
         body_repr = self._build_bodyencoder(embedding_layer)(sequences_input_body)
+        entity_ab_repr = self._build_entity(entity_embedding_layer)(sequences_entity_input_ab)
+        body_repr = layers.Add()([body_repr, entity_ab_repr])
         vert_repr = self._build_vertencoder()(input_vert)
         subvert_repr = self._build_subvertencoder()(input_subvert)
         concate_repr = layers.Concatenate(axis=-2)([title_repr, body_repr, vert_repr, subvert_repr])
@@ -167,6 +181,19 @@ class NRMSModel(BaseModel):
         pred_title = AttLayer2(hparams.attention_hidden_dim, seed=self.seed)(y)
         pred_title = layers.Reshape((1, hparams.filter_num))(pred_title)
         model = keras.Model(sequences_input_title, pred_title, name='title_encoder')
+        return model
+
+    def _build_entity(self, entity_embedding_layer):
+        hparams = self.hparams
+        sequences_input_entity = keras.Input(shape=(hparams.title_size,), dtype='int32')
+        embedded_sequences_entity = entity_embedding_layer(sequences_input_entity)
+        y = layers.Dropout(hparams.dropout)(embedded_sequences_entity)
+        y = SelfAttention(hparams.head_num, hparams.head_dim, seed=self.seed)([y, y, y])
+        y = layers.Dropout(hparams.dropout)(y)
+
+        pred_entity = AttLayer2(hparams.attention_hidden_dim, seed=self.seed)(y)
+        pred_entity = layers.Reshape((1, hparams.filter_num))(pred_entity)
+        model = keras.Model(sequences_input_entity, pred_entity, name='entity_encoder')
         return model
 
     def _build_bodyencoder(self, embedding_layer):
@@ -234,26 +261,36 @@ class NRMSModel(BaseModel):
         his_input_title = keras.Input(
             shape=(hparams.his_size, hparams.title_size), dtype="int32"
         )
+        his_input_entity_title = keras.Input(
+            shape=(hparams.his_size, hparams.entity_size), dtype="int32"
+        )
         his_input_body = keras.Input(shape=(hparams.his_size, hparams.body_size), dtype='int32')
+        his_input_entity_ab = keras.Input(shape=(hparams.his_size, hparams.entity_size), dtype='int32')
         his_input_vert = keras.Input(shape=(hparams.his_size, 1), dtype='int32')
         his_input_subvert = keras.Input(shape=(hparams.his_size, 1), dtype='int32')
 
         pred_input_title = keras.Input(
             shape=(hparams.npratio + 1, hparams.title_size), dtype="int32"
         )
+        pred_input_entity_title = keras.Input(
+            shape=(hparams.npratio + 1, hparams.entity_size), dtype="int32"
+        )
         pred_input_body = keras.Input(shape=(hparams.npratio+1, hparams.body_size), dtype='int32')
+        pred_input_entity_ab = keras.Input(shape=(hparams.npratio + 1, hparams.entity_size), dtype='int32')
         pred_input_vert = keras.Input(shape=(hparams.npratio+1, 1), dtype='int32')
         pred_input_subvert = keras.Input(shape=(hparams.npratio + 1, 1), dtype='int32')
 
         pred_input_title_one = keras.Input(shape=(1, hparams.title_size), dtype="int32")
+        pred_input_entity_title_one = keras.Input(shape=(1, hparams.entity_size), dtype="int32")
         pred_input_body_one = keras.Input(shape=(1, hparams.body_size), dtype='int32')
+        pred_input_entity_ab_one = keras.Input(shape=(1, hparams.entity_size), dtype='int32')
         pred_input_vert_one = keras.Input(shape=(1, 1), dtype='int32')
         pred_input_subvert_one = keras.Input(shape=(1, 1), dtype='int32')
 
-        his_title_body_verts = layers.Concatenate(axis=-1)([his_input_title, his_input_body, his_input_vert, his_input_subvert])
-        pred_title_body_verts = layers.Concatenate(axis=-1)([pred_input_title, pred_input_body, pred_input_vert, pred_input_subvert])
+        his_title_body_verts = layers.Concatenate(axis=-1)([his_input_title, his_input_entity_title, his_input_body, his_input_entity_ab, his_input_vert, his_input_subvert])
+        pred_title_body_verts = layers.Concatenate(axis=-1)([pred_input_title, pred_input_entity_title, pred_input_body, pred_input_entity_ab, pred_input_vert, pred_input_subvert])
 
-        pred_title_body_verts_one = layers.Concatenate(axis=-1)([pred_input_title_one, pred_input_body_one, pred_input_vert_one, pred_input_subvert_one])
+        pred_title_body_verts_one = layers.Concatenate(axis=-1)([pred_input_title_one, pred_input_entity_title_one, pred_input_body_one, pred_input_entity_ab_one, pred_input_vert_one, pred_input_subvert_one])
         pred_title_body_verts_one = layers.Reshape((-1,))(pred_title_body_verts_one)
 
         embedding_layer = layers.Embedding(
@@ -262,8 +299,13 @@ class NRMSModel(BaseModel):
             weights=[self.word2vec_embedding],
             trainable=True,
         )
-
-        newsencoder = self._build_newsencoder(embedding_layer)
+        entity_embedding_layer = layers.Embedding(
+            self.entity2vec_embedding.shape[0],
+            hparams.entity_emd_dim,
+            weights=[self.entity2vec_embedding],
+            trainable=True,
+        )
+        newsencoder = self._build_newsencoder(embedding_layer, entity_embedding_layer)
         self.userencoder = self._build_userencoder(newsencoder)
         self.newsencoder = newsencoder
 
@@ -277,7 +319,7 @@ class NRMSModel(BaseModel):
         pred_one = layers.Dot(axes=-1)([news_present_one, user_present])
         pred_one = layers.Activation(activation="sigmoid")(pred_one)
 
-        model = keras.Model([his_input_title, his_input_body, his_input_vert, his_input_subvert, pred_input_title, pred_input_body, pred_input_vert, pred_input_subvert], preds)
-        scorer = keras.Model([his_input_title, his_input_body, his_input_vert, his_input_subvert, pred_input_title_one, pred_input_body_one, pred_input_vert_one, pred_input_subvert_one], pred_one)
+        model = keras.Model([his_input_title, his_input_entity_title, his_input_body, his_input_entity_ab, his_input_vert, his_input_subvert, pred_input_title, pred_input_entity_title, pred_input_body, pred_input_entity_ab, pred_input_vert, pred_input_subvert], preds)
+        scorer = keras.Model([his_input_title, his_input_entity_title, his_input_body, his_input_entity_ab, his_input_vert, his_input_subvert, pred_input_title_one, pred_input_entity_title_one, pred_input_body_one, pred_input_entity_ab_one, pred_input_vert_one, pred_input_subvert_one], pred_one)
 
         return model, scorer

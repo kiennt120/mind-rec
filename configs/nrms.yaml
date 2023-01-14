@@ -1,6 +1,7 @@
 data:
   title_size: 30
   body_size: 50
+  entity_size: 15
   his_size: 50
   vert_num: 17
   subvert_num: 249
@@ -18,6 +19,7 @@ model:
   attention_hidden_dim: 200
   word_emb_dim: 300
   vert_emb_dim: 100
+  entity_emd_dim: 100
   subvert_emd_dim: 100
 
   dropout: 0.2

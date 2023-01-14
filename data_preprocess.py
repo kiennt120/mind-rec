@@ -146,6 +146,17 @@ def get_words_and_entities(train_news, utils):
 
     return news_vert_path, news_subvert_path, news_words_path
 
+def get_entities(entity_emb_file):
+    with open(entity_emb_file, encoding='utf-8') as f:
+        lines = f.readlines()
+    entities_dict = {}
+    for i, line in enumerate(lines):
+        splitted = line.strip('\n').split('\t')
+        entities_dict[splitted[0]] = i
+
+    with open('./dataset/entity_dict.pkl', 'wb') as handle:
+        pickle.dump(entities_dict, handle)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

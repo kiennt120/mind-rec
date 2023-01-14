@@ -75,7 +75,7 @@ class BaseModel:
         self.model.compile(loss=self.loss, optimizer=self.train_optimizer)
 
     def _init_entity_embedding(self, file_path):
-        entity_embedding = pd.read_table(file_path, index_col=0, header=None, names=range(0, 101))
+        entity_embedding = pd.read_table(file_path, names=range(0, 101))
         entity_embedding.drop(entity_embedding.columns[len(entity_embedding.columns)-1], axis=1, inplace=True)
 
         return entity_embedding.to_numpy()
