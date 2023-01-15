@@ -106,12 +106,16 @@ class MINDAllIterator(BaseIterator):
                 entity_title_list = []
                 for entity in json.loads(entity_title):
                     entity_title_list.append(entity['WikidataId'])
-                news_entity_title.append(entity_title_list.reverse())
+                a = entity_title_list
+                a.reverse()
+                news_entity_title.append(a)
 
                 entity_ab_list = []
                 for entity in json.loads(entity_ab):
                     entity_ab_list.append(entity['WikidataId'])
-                news_entity_ab.append(entity_ab_list.reverse())
+                b = entity_ab_list
+                b.reverse()
+                news_entity_ab.append(b)
 
         self.news_title_index = np.zeros((len(news_title), self.title_size), dtype="int32")
         self.news_ab_index = np.zeros((len(news_ab), self.body_size), dtype="int32")
