@@ -17,7 +17,7 @@ info:
   
 model:
   attention_hidden_dim: 200
-  word_emb_dim: 300
+  word_emb_dim: 100
   vert_emb_dim: 100
   entity_emd_dim: 100
   subvert_emd_dim: 100
