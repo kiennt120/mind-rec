@@ -183,6 +183,9 @@ class NRMSModel(BaseModel):
         model = keras.Model(sequences_input_title, pred_title, name='title_encoder')
         return model
 
+    # def _build_add_title_entity(self, embedding_layer, entity_embedding_layer):
+    #     hparams = self.hparams
+
     def _build_entity_title(self, entity_embedding_layer):
         hparams = self.hparams
         sequences_input_entity = keras.Input(shape=(hparams.entity_size,), dtype='int32')

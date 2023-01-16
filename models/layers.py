@@ -53,11 +53,11 @@ class AttLayer2(layers.Layer):
         super(AttLayer2, self).build(input_shape)  # be sure you call this somewhere!
 
     def call(self, inputs, mask=None, **kwargs):
-        """Core implemention of soft attention
+        """Core implementation of soft attention
 
         Args:
             inputs (object): input tensor.
-
+            mask
         Returns:
             object: weighted sum of input tensors.
         """
@@ -81,7 +81,7 @@ class AttLayer2(layers.Layer):
         return K.sum(weighted_input, axis=1)
 
     def compute_mask(self, input, input_mask=None):
-        """Compte output mask value
+        """Compute output mask value
 
         Args:
             input (object): input tensor.
@@ -109,7 +109,7 @@ class SelfAttention(layers.Layer):
 
     Args:
         multiheads (int): The number of heads.
-        head_dim (object): Dimention of each head.
+        head_dim (object): Dimension of each head.
         mask_right (boolean): whether to mask right words.
 
     Returns:

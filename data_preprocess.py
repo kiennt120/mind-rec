@@ -1,4 +1,3 @@
-# from config import model_name
 import pickle
 import pandas as pd
 import numpy as np
@@ -161,12 +160,13 @@ def get_entities(entity_emb_file):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--yaml_path', type=str)
+    # parser.add_argument('--yaml_path', type=str)
     parser.add_argument('--data_path', type=str)
+    parser.add_argument('--word_emb_dim', type=int)
     args = parser.parse_args()
 
-    config = load_yaml(args.yaml_path)
-    config = create_hparams(flat_config(config))
+    # config = load_yaml(args.yaml_path)
+    # config = create_hparams(flat_config(config))
     data_path = args.data_path
     train_dir = os.path.join(data_path, 'train')
     val_dir = os.path.join(data_path, 'valid')
@@ -175,5 +175,5 @@ if __name__ == '__main__':
 
     news_vert_dict_path, news_subvert_dict_path, news_word_dict_path = get_words_and_entities(os.path.join(train_dir, 'news.tsv'), utils)
     glove_path = download_and_extract_glove(data_path)
-    generate_word_embedding(glove_path, os.path.join(utils, 'embedding.npy'), news_word_dict_path, config.word_emb_dim)
+    generate_word_embedding(glove_path, os.path.join(utils, 'embedding.npy'), news_word_dict_path, args.word_emb_dim)
     user2index_path = get_user(os.path.join(train_dir, 'behaviors.tsv'), utils)
