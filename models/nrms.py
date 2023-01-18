@@ -159,13 +159,14 @@ class NRMSModel(BaseModel):
         entity_title_repr = self._build_entity_title(entity_embedding_layer)(sequences_entity_input_title)
         title_repr = layers.Concatenate(axis=-2)([title_repr, entity_title_repr])
         title_repr = layers.Dense(hparams.attention_hidden_dim)(title_repr)
-        # title_repr = layers.Add()([title_repr, entity_title_repr])
+        title_repr = layers.Reshape((1, hparams.filter_num))(title_repr)
+
         body_repr = self._build_bodyencoder(embedding_layer)(sequences_input_body)
         entity_ab_repr = self._build_entity_ab(entity_embedding_layer)(sequences_entity_input_ab)
-        print(entity_ab_repr.get_shape())
         body_repr = layers.Concatenate(axis=-2)([body_repr, entity_ab_repr])
         body_repr = layers.Dense(hparams.attention_hidden_dim)(body_repr)
-        # body_repr = layers.Add()([body_repr, entity_ab_repr])
+        body_repr = layers.Reshape((1, hparams.filter_num))(body_repr)
+
         vert_repr = self._build_vertencoder()(input_vert)
         subvert_repr = self._build_subvertencoder()(input_subvert)
         concate_repr = layers.Concatenate(axis=-2)([title_repr, body_repr, vert_repr, subvert_repr])
