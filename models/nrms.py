@@ -234,9 +234,7 @@ class NRMSModel(BaseModel):
         hparams = self.hparams
         input_vert = keras.Input(shape=(1,), dtype="int32")
 
-        vert_embedding = layers.Embedding(
-            hparams.vert_num, hparams.vert_emb_dim, trainable=True
-        )
+        vert_embedding = layers.Embedding(hparams.vert_num, hparams.vert_emb_dim, trainable=True)
 
         vert_emb = vert_embedding(input_vert)
         pred_vert = layers.Dense(

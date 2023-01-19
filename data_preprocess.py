@@ -160,13 +160,10 @@ def get_entities(entity_emb_file):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--yaml_path', type=str)
     parser.add_argument('--data_path', type=str)
     parser.add_argument('--word_emb_dim', type=int)
     args = parser.parse_args()
 
-    # config = load_yaml(args.yaml_path)
-    # config = create_hparams(flat_config(config))
     data_path = args.data_path
     train_dir = os.path.join(data_path, 'train')
     val_dir = os.path.join(data_path, 'valid')

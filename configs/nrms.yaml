@@ -1,23 +1,23 @@
 data:
   title_size: 30
   body_size: 50
-  entity_size: 15
+  entity_size: 7
   his_size: 50
   vert_num: 17
   subvert_num: 249
   data_format: news
   npratio: 4
-  
+
 info:
   metrics:
   - group_auc
   - mean_mrr
   - ndcg@5;10
   show_step: 100000
-  
+
 model:
   attention_hidden_dim: 200
-  word_emb_dim: 100
+  word_emb_dim: 200
   vert_emb_dim: 100
   entity_emd_dim: 100
   subvert_emd_dim: 100

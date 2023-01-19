@@ -53,6 +53,7 @@ def init_news(news_file):
             b = entity_ab_list
             b.reverse()
             news_entity_ab.append(b)
+            print(b)
 
     news_title_index = np.zeros((len(news_title), title_size), dtype="int32")
     news_ab_index = np.zeros((len(news_ab), body_size), dtype="int32")
@@ -61,31 +62,30 @@ def init_news(news_file):
     news_entity_title_index = np.zeros((len(news_entity_title), entity_size), dtype='int32')
     news_entity_ab_index = np.zeros((len(news_entity_ab), entity_size), dtype='int32')
 
-    print(news_entity_title)
-    for news_index in range(len(news_title)):
-        title = news_title[news_index]
-        ab = news_ab[news_index]
-        vert = news_vert[news_index]
-        subvert = news_subvert[news_index]
-        entity_title = news_entity_title[news_index]
-        entity_ab = news_entity_ab[news_index]
-
-        for word_index in range(min(title_size, len(title))):
-            if title[word_index] in word_dict:
-                news_title_index[news_index, word_index] = word_dict[title[word_index].lower()]
-        for word_index_ab in range(min(body_size, len(ab))):
-            if ab[word_index_ab] in word_dict:
-                news_ab_index[news_index, word_index_ab] = word_dict[ab[word_index_ab].lower()]
-        if vert in vert_dict:
-            news_vert_index[news_index, 0] = vert_dict[vert]
-        if subvert in subvert_dict:
-            news_subvert_index[news_index, 0] = subvert_dict[subvert]
-        for entity in range(min(entity_size, len(entity_title))):
-            if entity_title[entity] in entity_dict:
-                news_entity_title_index[news_index, entity] = entity_dict[entity_title[entity]]
-        for entity in range(min(entity_size, len(entity_ab))):
-            if entity_ab[entity] in entity_dict:
-                news_entity_ab_index[news_index, entity] = entity_dict[entity_ab[entity]]
+    # for news_index in range(len(news_title)):
+    #     title = news_title[news_index]
+    #     ab = news_ab[news_index]
+    #     vert = news_vert[news_index]
+    #     subvert = news_subvert[news_index]
+    #     entity_title = news_entity_title[news_index]
+    #     entity_ab = news_entity_ab[news_index]
+    #
+    #     for word_index in range(min(title_size, len(title))):
+    #         if title[word_index] in word_dict:
+    #             news_title_index[news_index, word_index] = word_dict[title[word_index].lower()]
+    #     for word_index_ab in range(min(body_size, len(ab))):
+    #         if ab[word_index_ab] in word_dict:
+    #             news_ab_index[news_index, word_index_ab] = word_dict[ab[word_index_ab].lower()]
+    #     if vert in vert_dict:
+    #         news_vert_index[news_index, 0] = vert_dict[vert]
+    #     if subvert in subvert_dict:
+    #         news_subvert_index[news_index, 0] = subvert_dict[subvert]
+    #     for entity in range(min(entity_size, len(entity_title))):
+    #         if entity_title[entity] in entity_dict:
+    #             news_entity_title_index[news_index, entity] = entity_dict[entity_title[entity]]
+    #     for entity in range(min(entity_size, len(entity_ab))):
+    #         if entity_ab[entity] in entity_dict:
+    #             news_entity_ab_index[news_index, entity] = entity_dict[entity_ab[entity]]
 
 
 if __name__ == '__main__':
