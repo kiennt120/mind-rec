@@ -1,10 +1,10 @@
+import json
 import pickle
 import pandas as pd
 import numpy as np
 import csv
 import os
 from dataset.download_utils import unzip_file, maybe_download
-# from nltk.tokenize import RegexpTokenizer
 from models.newsrec_utils import word_tokenize
 from models.deeprec_utils import load_yaml, flat_config, create_hparams
 import argparse
@@ -87,62 +87,61 @@ def download_and_extract_glove(dest_path):
 
 
 def _read_news(filepath, news_vert, news_subvert, news_words, news_entities):
-    vert, subvert, word, entity = 0, 0, 0, 0
+    cnt_vert, cnt_subvert, cnt_word = 0, 0, 0
     with open(filepath, encoding="utf-8") as f:
         lines = f.readlines()
     for line in lines:
-        splitted = line.strip("\n").split("\t")
-        if splitted[1] not in news_vert:
-            vert += 1
-            news_vert[splitted[1]] = vert
-        if splitted[2] not in news_subvert:
-            subvert += 1
-            news_subvert[splitted[2]] = subvert
-        for i in word_tokenize(splitted[3]):
+        nid, vert, subvert, title, ab, url, entity_title, entity_ab = line.strip("\n").split("\t")
+        if vert not in news_vert:
+            cnt_vert += 1
+            news_vert[vert] = cnt_vert
+        if subvert not in news_subvert:
+            cnt_subvert += 1
+            news_subvert[subvert] = cnt_subvert
+
+        words_title = word_tokenize(title)
+        words_ab = word_tokenize(ab)
+        words = words_title + words_ab
+        for i in words:
             if i not in news_words:
-                word += 1
-                news_words[i] = word
-        # news_entities[splitted[0]] = []
-        # for entity in json.loads(splitted[6]):
-        #     news_entities[splitted[0]].append(
-        #         (entity["SurfaceForms"], entity["WikidataId"])
-        #     )
+                cnt_word += 1
+                news_words[i] = cnt_word
+        for entity in json.loads(entity_title):
+            if entity['WikidataId'] not in news_entities:
+                news_entities.append(entity['WikidataId'])
+        for entity in json.loads(entity_ab):
+            if entity['WikidataId'] not in news_entities:
+                news_entities.append(entity['WikidataId'])
+
     return news_vert, news_subvert, news_words, news_entities
 
-def get_words_and_entities(train_news, utils):
+def get_words_and_entities(train_news, util):
     """Load words and entities
 
     Args:
         train_news (str): News train file.
         # valid_news (str): News validation file.
-        utils
+        util
     Returns:
         dict, dict: Words and entities dictionaries.
     """
     news_vert = {}
     news_subvert = {}
     news_words = {}
-    news_entities = {}
+    news_entities = []
     news_vert, news_subvert, news_words, news_entities = _read_news(
         train_news, news_vert, news_subvert, news_words, news_entities
     )
-    # news_vert, news_subvert, news_words, news_entities = _read_news(
-    #     valid_news, news_vert, news_subvert, news_words, news_entities, tokenizer
-    # )
 
-    news_vert_path = os.path.join(utils, 'vert_dict.pkl')
+    news_vert_path = os.path.join(util, 'vert_dict.pkl')
     with open(news_vert_path, 'wb') as f:
         pickle.dump(news_vert, f)
-    news_subvert_path = os.path.join(utils, 'subvert_dict.pkl')
+    news_subvert_path = os.path.join(util, 'subvert_dict.pkl')
     with open(news_subvert_path, 'wb') as f:
         pickle.dump(news_subvert, f)
-    news_words_path = os.path.join(utils, 'word_dict.pkl')
+    news_words_path = os.path.join(util, 'word_dict.pkl')
     with open(news_words_path, 'wb') as f:
         pickle.dump(news_words, f)
-
-    # news_entities_path = os.path.join(utils, 'entity_dict.pkl')
-    # with open(news_entities_path, 'wb') as f:
-    #     pickle.dump(news_entities, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     return news_vert_path, news_subvert_path, news_words_path
 
