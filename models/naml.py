@@ -6,7 +6,7 @@ import tensorflow.keras as keras
 from tensorflow.keras import layers
 
 from models.base_model import BaseModel
-from models.layers import AttLayer2
+from models.layers import AttLayer2, SelfAttention
 
 __all__ = ["NAMLModel"]
 
@@ -116,20 +116,21 @@ class NAMLModel(BaseModel):
             object: the user encoder of NAML.
         """
         hparams = self.hparams
-        his_input_title_body_verts = keras.Input(
+        his_input_news = keras.Input(
             shape=(hparams.his_size, hparams.title_size + hparams.body_size + 2 * hparams.entity_size + 2),
             dtype="int32",
         )
 
         click_news_presents = layers.TimeDistributed(newsencoder)(
-            his_input_title_body_verts
+            his_input_news
         )
-        user_present = AttLayer2(hparams.attention_hidden_dim, seed=self.seed)(
-            click_news_presents
+        y = SelfAttention(hparams.head_num, hparams.head_dim, seed=self.seed)(
+            [click_news_presents] * 3
         )
+        user_present = AttLayer2(hparams.attention_hidden_dim, seed=self.seed)(y)
 
         model = keras.Model(
-            his_input_title_body_verts, user_present, name="user_encoder"
+            his_input_news, user_present, name="user_encoder"
         )
         return model
 

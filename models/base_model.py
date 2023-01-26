@@ -188,8 +188,8 @@ class BaseModel:
         self,
         train_news_file,
         train_behaviors_file,
-        valid_news_file,
-        valid_behaviors_file,
+        valid_news_file=None,
+        valid_behaviors_file=None,
         test_news_file=None,
         test_behaviors_file=None,
     ):
@@ -236,23 +236,26 @@ class BaseModel:
             train_end = time.time()
             train_time = train_end - train_start
 
-            eval_start = time.time()
-
             train_info = ",".join(
                 [
                     str(item[0]) + ":" + str(item[1])
                     for item in [("logloss loss", epoch_loss / step)]
                 ]
             )
-
-            eval_res = self.run_eval(valid_news_file, valid_behaviors_file)
-            eval_info = ", ".join(
-                [
-                    str(item[0]) + ":" + str(item[1])
-                    for item in sorted(eval_res.items(), key=lambda x: x[0])
-                ]
-            )
+            test_time, eval_time = 0, 0
+            if valid_news_file:
+                eval_start = time.time()
+                eval_res = self.run_eval(valid_news_file, valid_behaviors_file)
+                eval_info = ", ".join(
+                    [
+                        str(item[0]) + ":" + str(item[1])
+                        for item in sorted(eval_res.items(), key=lambda x: x[0])
+                    ]
+                )
+                eval_end = time.time()
+                eval_time = eval_end - eval_start
             if test_news_file is not None:
+                test_start = time.time()
                 test_res = self.run_eval(test_news_file, test_behaviors_file)
                 test_info = ", ".join(
                     [
@@ -260,10 +263,10 @@ class BaseModel:
                         for item in sorted(test_res.items(), key=lambda x: x[0])
                     ]
                 )
-            eval_end = time.time()
-            eval_time = eval_end - eval_start
+                test_end = time.time()
+                test_time = test_end - test_start
 
-            if test_news_file is not None:
+            if test_news_file and valid_news_file:
                 print(
                     "at epoch {0:d}".format(epoch)
                     + "\ntrain info: "
@@ -272,20 +275,24 @@ class BaseModel:
                     + eval_info
                     + "\ntest info: "
                     + test_info
+                    + '\nTrain time: {0:.1f}, eval time: {1:.1f}, test_time: {2:.1f}'.format(train_time, eval_time, test_time)
                 )
-            else:
+            elif valid_news_file and (test_news_file is None):
                 print(
                     "at epoch {0:d}".format(epoch)
                     + "\ntrain info: "
                     + train_info
                     + "\neval info: "
                     + eval_info
+                    + '\nTrain time: {0:.1f}, eval time: {1:.1f}'.format(train_time, eval_time)
                 )
-            print(
-                "at epoch {0:d} , train time: {1:.1f} eval time: {2:.1f}".format(
-                    epoch, train_time, eval_time
+            elif valid_news_file is None:
+                print(
+                    "at epoch {0:d}".format(epoch)
+                    + "\ntrain info: "
+                    + train_info
+                    + '\nTrain time: {0:.1f}'.format(train_time)
                 )
-            )
 
         return self
 
