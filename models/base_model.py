@@ -34,7 +34,7 @@ class BaseModel:
         parameter set.
 
         Args:
-            hparams (HParams): A HParams object, holds the entire set of hyperparameters.
+            hparams (HParams): A HParams object, holds the entire set of hyper parameters.
             iterator_creator (object): An iterator to load the data.
             graph (object): An optional graph.
             seed (int): Random seed.
@@ -76,7 +76,7 @@ class BaseModel:
 
     def _init_entity_embedding(self, file_path):
         entity_embedding = pd.read_table(file_path, names=range(0, 101))
-        entity_embedding.drop(entity_embedding.columns[len(entity_embedding.columns)-1], axis=1, inplace=True)
+        entity_embedding.drop(entity_embedding.columns[len(entity_embedding.columns) - 1], axis=1, inplace=True)
 
         return entity_embedding.to_numpy()
 
@@ -125,7 +125,7 @@ class BaseModel:
         optimizer = self.hparams.optimizer
 
         if optimizer == "adam":
-            train_opt = keras.optimizers.Adam(lr=lr)
+            train_opt = keras.optimizers.Adam(learning_rate=lr)
 
         return train_opt
 
@@ -290,7 +290,7 @@ class BaseModel:
         return self
 
     def group_labels(self, labels, preds, group_keys):
-        """Devide labels and preds into several group according to values in group keys.
+        """Divide labels and preds into several group according to values in group keys.
 
         Args:
             labels (list): ground truth label list.
@@ -326,8 +326,8 @@ class BaseModel:
         """Evaluate the given file and returns some evaluation metrics.
 
         Args:
-            filename (str): A file name that will be evaluated.
-
+            news_filename (str): A file name that will be evaluated.
+            behaviors_file
         Returns:
             dict: A dictionary that contains evaluation metrics.
         """

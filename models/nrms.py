@@ -37,7 +37,7 @@ class NRMSModel(BaseModel):
         super().__init__(hparams, iterator_creator, seed=seed)
 
     def _get_input_label_from_iter(self, batch_data):
-        """get input and labels for trainning from iterator
+        """get input and labels for training from iterator
 
         Args:
             batch data: input batch data from iterator

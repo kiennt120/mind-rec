@@ -1,7 +1,7 @@
 data:
   title_size: 30
   body_size: 50
-  entity_size: 7
+  entity_size: 5
   his_size: 50
   vert_num: 17
   subvert_num: 249
@@ -17,7 +17,7 @@ info:
 
 model:
   attention_hidden_dim: 200
-  word_emb_dim: 200
+  word_emb_dim: 300
   vert_emb_dim: 100
   entity_emd_dim: 100
   subvert_emd_dim: 100
@@ -32,7 +32,7 @@ model:
 train:
   batch_size: 32
   epochs: 10
-  learning_rate: 0.0001
+  learning_rate: 0.00005
   loss: cross_entropy_loss
   optimizer: adam
   support_quick_scoring: true
