@@ -381,7 +381,7 @@ class NAMLModel(BaseModel):
         )
         entity_embedding_layer = layers.Embedding(
             self.entity2vec_embedding.shape[0],
-            hparams.entity_emd_dim,
+            hparams.entity_emb_dim,
             weights=[self.entity2vec_embedding],
             trainable=True,
         )

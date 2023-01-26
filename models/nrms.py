@@ -249,7 +249,7 @@ class NRMSModel(BaseModel):
     def _build_subvertencoder(self):
         hparams = self.hparams
         input_subvert = keras.Input(shape=(1,), dtype='int32')
-        subvert_embedding = layers.Embedding(hparams.subvert_num, hparams.subvert_emd_dim, trainable=True)
+        subvert_embedding = layers.Embedding(hparams.subvert_num, hparams.subvert_emb_dim, trainable=True)
 
         subvert_emd = subvert_embedding(input_subvert)
         pred_subvert = layers.Dense(
@@ -316,7 +316,7 @@ class NRMSModel(BaseModel):
         )
         entity_embedding_layer = layers.Embedding(
             self.entity2vec_embedding.shape[0],
-            hparams.entity_emd_dim,
+            hparams.entity_emb_dim,
             weights=[self.entity2vec_embedding],
             trainable=True,
         )
