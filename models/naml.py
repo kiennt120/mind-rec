@@ -402,11 +402,15 @@ class NAMLModel(BaseModel):
         model = keras.Model(
             [
                 his_input_title,
+                his_input_entity_title,
                 his_input_body,
+                his_input_entity_ab,
                 his_input_vert,
                 his_input_subvert,
                 pred_input_title,
+                pred_input_entity_title,
                 pred_input_body,
+                pred_input_entity_ab,
                 pred_input_vert,
                 pred_input_subvert,
             ],
@@ -416,11 +420,15 @@ class NAMLModel(BaseModel):
         scorer = keras.Model(
             [
                 his_input_title,
+                his_input_entity_title,
                 his_input_body,
+                his_input_entity_ab,
                 his_input_vert,
                 his_input_subvert,
                 pred_input_title_one,
+                pred_input_entity_title_one,
                 pred_input_body_one,
+                pred_input_entity_ab_one,
                 pred_input_vert_one,
                 pred_input_subvert_one,
             ],
