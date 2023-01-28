@@ -191,6 +191,10 @@ if __name__ == '__main__':
     # val_dir = os.path.join(data_path, 'MINDlarge_dev')
     # test_dir = os.path.join(data_path, 'MINDlarge_test')
     # utils = os.path.join(data_path, 'utils')
+    os.makedirs(train_dir, exist_ok=True)
+    os.makedirs(val_dir, exist_ok=True)
+    os.makedirs(test_dir, exist_ok=True)
+    os.makedirs(utils, exist_ok=True)
 
     news_vert_dict_path, news_subvert_dict_path, news_word_dict_path, news_entity_dict_path = get_words_and_entities(os.path.join(train_dir, 'news.tsv'), utils)
     user2index_path = get_user(os.path.join(train_dir, 'behaviors.tsv'), utils)
