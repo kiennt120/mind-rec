@@ -34,7 +34,7 @@ class NAMLModel(BaseModel):
         """
 
         self.word2vec_embedding = self._init_embedding(hparams.wordEmb_file)
-        self.entity2vec_embedding = self._init_entity_embedding(hparams.entityEmb_file)
+        self.entity2vec_embedding = self._init_embedding(hparams.entityEmb_file)
         self.hparam = hparams
 
         super().__init__(hparams, iterator_creator, seed=seed)

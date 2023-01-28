@@ -33,7 +33,7 @@ class NRMSModel(BaseModel):
             iterator_creator_test (object): NRMS data loader class for test and validation data
         """
         self.word2vec_embedding = self._init_embedding(hparams.wordEmb_file)
-        self.entity2vec_embedding = self._init_entity_embedding(hparams.entityEmb_file)
+        self.entity2vec_embedding = self._init_embedding(hparams.entityEmb_file)
         super().__init__(hparams, iterator_creator, seed=seed)
 
     def _get_input_label_from_iter(self, batch_data):

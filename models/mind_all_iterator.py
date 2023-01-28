@@ -134,10 +134,10 @@ class MINDAllIterator(BaseIterator):
 
             for word_index in range(min(self.title_size, len(title))):
                 if title[word_index] in self.word_dict:
-                    self.news_title_index[news_index, word_index] = self.word_dict[title[word_index].lower()]
+                    self.news_title_index[news_index, word_index] = self.word_dict[title[word_index]]
             for word_index_ab in range(min(self.body_size, len(ab))):
                 if ab[word_index_ab] in self.word_dict:
-                    self.news_ab_index[news_index, word_index_ab] = self.word_dict[ab[word_index_ab].lower()]
+                    self.news_ab_index[news_index, word_index_ab] = self.word_dict[ab[word_index_ab]]
             if vert in self.vert_dict:
                 self.news_vert_index[news_index, 0] = self.vert_dict[vert]
             if subvert in self.subvert_dict:
@@ -168,9 +168,7 @@ class MINDAllIterator(BaseIterator):
                 uid, time, history, impr = line.strip("\n").split(self.col_spliter)[-4:]
 
                 history = [self.nid2index[i] for i in history.split()]
-                history = [0] * (self.his_size - len(history)) + history[
-                                                                 : self.his_size
-                                                                 ]
+                history = [0] * (self.his_size - len(history)) + history[: self.his_size]
 
                 impr_news = [self.nid2index[i.split("-")[0]] for i in impr.split()]
                 try:
