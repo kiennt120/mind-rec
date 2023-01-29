@@ -70,20 +70,20 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_path', type=str)
     parser.add_argument('--word_emb_dim', default=300, type=int)
-    parser.add_argument('--mind_type', default='small', type=str)
+    # parser.add_argument('--mind_type', default='small', type=str)
     args = parser.parse_args()
 
     data_path = args.data_path
     word_embedding_dim = args.word_emb_dim
-    mind_type = args.mind_type
+    # mind_type = args.mind_type
 
-    train_zip, valid_zip, test_zip = download_mind(size=mind_type, dest_path=data_path)
-    unzip_file(train_zip, os.path.join(data_path, 'train'), clean_zip_file=True)
-    unzip_file(valid_zip, os.path.join(data_path, 'valid'), clean_zip_file=True)
-    if test_zip is not None:
-        unzip_file(test_zip, os.path.join(data_path, 'test'), clean_zip_file=True)
+    # train_zip, valid_zip, test_zip = download_mind(size=mind_type, dest_path=data_path)
+    # unzip_file(train_zip, os.path.join(data_path, 'train'), clean_zip_file=True)
+    # unzip_file(valid_zip, os.path.join(data_path, 'valid'), clean_zip_file=True)
+    # if test_zip is not None:
+    #     unzip_file(test_zip, os.path.join(data_path, 'test'), clean_zip_file=True)
 
-    output_path = os.path.join(data_path, 'utils_')
+    output_path = os.path.join(data_path, 'utils')
     os.makedirs(output_path, exist_ok=True)
     news = pd.read_table(os.path.join(data_path, 'train', 'news.tsv'),
                          names=['newid', 'vertical', 'subvertical', 'title',
