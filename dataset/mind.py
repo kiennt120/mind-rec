@@ -1,6 +1,3 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
-# Licensed under the MIT License.
-
 import os
 import random
 import logging
@@ -10,7 +7,7 @@ import re
 from tqdm import tqdm
 from nltk.tokenize import RegexpTokenizer
 
-from recommenders.datasets.download_utils import (
+from dataset.download_utils import (
     maybe_download,
     download_path,
     unzip_file,
@@ -22,6 +19,9 @@ URL_MIND_LARGE_TRAIN = (
 )
 URL_MIND_LARGE_VALID = (
     "https://mind201910small.blob.core.windows.net/release/MINDlarge_dev.zip"
+)
+URL_MIND_LARGE_TEST = (
+    "https://mind201910small.blob.core.windows.net/release/MINDlarge_test.zip"
 )
 URL_MIND_SMALL_TRAIN = (
     "https://mind201910small.blob.core.windows.net/release/MINDsmall_train.zip"
@@ -40,9 +40,9 @@ URL_MIND_DEMO_UTILS = (
 )
 
 URL_MIND = {
-    "large": (URL_MIND_LARGE_TRAIN, URL_MIND_LARGE_VALID),
-    "small": (URL_MIND_SMALL_TRAIN, URL_MIND_SMALL_VALID),
-    "demo": (URL_MIND_DEMO_TRAIN, URL_MIND_DEMO_VALID),
+    "large": (URL_MIND_LARGE_TRAIN, URL_MIND_LARGE_VALID, URL_MIND_LARGE_TEST),
+    "small": (URL_MIND_SMALL_TRAIN, URL_MIND_SMALL_VALID, None),
+    "demo": (URL_MIND_DEMO_TRAIN, URL_MIND_DEMO_VALID, None),
 }
 
 logger = logging.getLogger()
@@ -61,11 +61,15 @@ def download_mind(size="small", dest_path=None):
     size_options = ["small", "large", "demo"]
     if size not in size_options:
         raise ValueError(f"Wrong size option, available options are {size_options}")
-    url_train, url_valid = URL_MIND[size]
+    url_train, url_valid, url_test = URL_MIND[size]
     with download_path(dest_path) as path:
         train_path = maybe_download(url=url_train, work_directory=path)
         valid_path = maybe_download(url=url_valid, work_directory=path)
-    return train_path, valid_path
+        if url_test is not None:
+            test_path = maybe_download(url=url_test, work_directory=path)
+        else:
+            test_path = None
+    return train_path, valid_path, test_path
 
 
 def extract_mind(
@@ -253,11 +257,11 @@ def download_and_extract_glove(dest_path):
         str: File path where Glove was extracted.
     """
     url = "http://nlp.stanford.edu/data/glove.6B.zip"
-    filepath = maybe_download(url=url, work_directory=dest_path)
     glove_path = os.path.join(dest_path, "glove")
-    unzip_file(filepath, glove_path, clean_zip_file=False)
+    if not os.path.isdir(glove_path):
+        filepath = maybe_download(url=url, work_directory=dest_path)
+        unzip_file(filepath, glove_path, clean_zip_file=True)
     return glove_path
-
 
 def generate_embeddings(
     data_path,
