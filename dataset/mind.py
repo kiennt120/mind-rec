@@ -247,17 +247,21 @@ def get_words_and_entities(train_news, valid_news):
     return news_words, news_entities
 
 
-def download_and_extract_glove(dest_path):
+def download_and_extract_glove(dest_path, word_embedding_dim):
     """Download and extract the Glove embedding
 
     Args:
         dest_path (str): Destination directory path for the downloaded file
-
+        word_embedding_dim
     Returns:
         str: File path where Glove was extracted.
     """
-    url = "http://nlp.stanford.edu/data/glove.6B.zip"
-    glove_path = os.path.join(dest_path, "glove")
+    if word_embedding_dim != 300:
+        url = "http://nlp.stanford.edu/data/glove.6B.zip"
+        glove_path = os.path.join(dest_path, "glove")
+    else:
+        url = "https://nlp.stanford.edu/data/glove.840B.300d.zip"
+        glove_path = os.path.join(dest_path, "glove.840B.300d")
     if not os.path.isdir(glove_path):
         filepath = maybe_download(url=url, work_directory=dest_path)
         unzip_file(filepath, glove_path, clean_zip_file=True)
