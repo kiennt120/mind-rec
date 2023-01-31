@@ -48,7 +48,7 @@ def generate_entity_embedding(news_entities, train_entities, valid_entities, tes
     entity_index = len(news_entities_dict)
     entity_embeddings = np.zeros([entity_index, 100])
     missed = 0
-    for key, value in news_entities_dict.items():
+    for key, value in tqdm(news_entities_dict.items()):
         try:
             entity_embeddings[value] = train_embedding.loc[[key]]
         except:

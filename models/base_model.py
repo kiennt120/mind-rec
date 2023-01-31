@@ -254,7 +254,7 @@ class BaseModel:
                 )
                 eval_end = time.time()
                 eval_time = eval_end - eval_start
-            if test_news_file is not None:
+            if test_news_file:
                 test_start = time.time()
                 test_res = self.run_eval(test_news_file, test_behaviors_file)
                 test_info = ", ".join(
