@@ -416,8 +416,11 @@ def load_glove_matrix(path_emb, word_dict, word_embedding_dim):
 
     embedding_matrix = np.zeros((len(word_dict) + 1, word_embedding_dim))
     exist_word = []
-
-    with open(os.path.join(path_emb, f"glove.6B.{word_embedding_dim}d.txt"), "rb") as f:
+    if word_embedding_dim == 300:
+        glove_dir = 'glove.840B'
+    else:
+        glove_dir = 'glove.6B'
+    with open(os.path.join(path_emb, glove_dir + f".{word_embedding_dim}d.txt"), "rb") as f:
         for l in tqdm(f):  # noqa: E741 ambiguous variable name 'l'
             l = l.split()  # noqa: E741 ambiguous variable name 'l'
             word = l[0].decode()
